@@ -1,0 +1,4 @@
+>lua
+require("mason").setup()
+requier("mason-lspconfig").setup()
+<
