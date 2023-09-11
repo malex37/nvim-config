@@ -24,6 +24,7 @@ call 'plug#begin'
   Plug 'f-person/git-blame.nvim'
   Plug 'tanvirtin/vgit.nvim'
   Plug 'rhysd/git-messenger.vim'
+  Plug ('l3mon4d3/luasnip', {  ['do'] = 'make install_jsregexp' })
 call 'plug#end'
 
 require("mason").setup()
@@ -31,7 +32,33 @@ require("mason-lspconfig").setup {
   ensure_installed = { "tsserver", "clangd", "volar", "tailwindcss", "lua_ls" },
   automatic_installation = true 
 }
-require("nvim-treesitter.configs").setup{highlight={enable = true},indent={enable = true},ensure_installed={"vue", "typescript", "javascript", "json", "html", "lua", "markdown_inline"},autotag={enable=true}}
+require("nvim-treesitter.configs").setup{
+  highlight={
+    enable = true
+  },
+  indent={
+    enable = true
+  },
+  ensure_installed={
+    "vue",
+    "typescript",
+    "javascript",
+    "json",
+    "html",
+    "lua",
+    "markdown_inline",
+    "c",
+    "vim",
+    "vimdoc",
+    "query",
+    "cpp"
+  },
+  autotag={
+    enable=true
+  }
+}
+
+
 require("vgit").setup()
 
 local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
@@ -66,6 +93,22 @@ local on_attach = function(client, bufnr)
     keymap.set("n", "<leader>oi", ":TypescriptOrganizeImports<CR>") -- organize imports 
     keymap.set("n", "<leader>ru", ":TypescriptRemoveUnused<CR>") -- remove unused variables
   end
+
+
+  vim.api.nvim_create_autocmd("CursordHold", {
+    buffer = bufnr,
+  callback = function()
+    local opts = {
+      focusable = false,
+      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+      border = 'rounded',
+      source = 'always',
+      prefix = ' ',
+      scope = 'cursor',
+    }
+    vim.diagnostic.open_float(nil, opts)
+  end
+  })
   
 end
 
@@ -79,7 +122,12 @@ lspconfig["tsserver"].setup {
 	capabilities = cmpCap,
   	on_attach = on_attach
 }
+lspconfig["clangd"].setup {
+  capabilities = cmpCap,
+  on_attach = on_attach
+}
 
+local luasnip = require("luasnip")
 local cmp = require("cmp")
 cmp.setup {
   mapping = cmp.mapping.preset.insert({
@@ -93,7 +141,12 @@ cmp.setup {
     { name = "nvim_lsp" },
     { name = "buffer" },
     { name = "path" },
-  })
+    { name = "path" },
+    { name = "treesitter" },
+  }),
+  snippet = {
+    expand = function(args) require('luasnip').lsp_expand(args.body) end
+  },
 }
 
 require("olmanue.plugins.telescope-setup")
