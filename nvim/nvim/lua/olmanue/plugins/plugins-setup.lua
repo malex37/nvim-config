@@ -26,7 +26,6 @@ call 'plug#begin'
   Plug 'nvim-tree/nvim-tree.lua'
   Plug 'jose-elias-alvarez/typescript.nvim'
   Plug ('nvimdev/lspsaga.nvim', { branch = 'main' })
-  Plug ('l3mon4d3/luasnip', {  ['do'] = 'make install_jsregexp' })
 --  Plug 'windwp/nvim-autopairs'
 --  Plug 'f-person/git-blame.nvim'
 --  Plug 'tanvirtin/vgit.nvim'
@@ -39,38 +38,7 @@ require("mason-lspconfig").setup {
   ensure_installed = { "tsserver", "clangd", "volar", "tailwindcss", "lua_ls", "eslint", "perlnavigator", "smithy_ls"},
   automatic_installation = true 
 }
-<<<<<<< HEAD
-require("nvim-treesitter.configs").setup{
-  highlight={
-    enable = true
-  },
-  indent={
-    enable = true
-  },
-  ensure_installed={
-    "vue",
-    "typescript",
-    "javascript",
-    "json",
-    "html",
-    "lua",
-    "markdown_inline",
-    "c",
-    "vim",
-    "vimdoc",
-    "query",
-    "cpp"
-  },
-  autotag={
-    enable=true
-  }
-}
-
-
-require("vgit").setup()
-=======
 require("nvim-treesitter.configs").setup{highlight={enable = true},indent={enable = true},ensure_installed={"vue", "typescript", "javascript", "json", "html", "lua", "markdown_inline", "smithy"},autotag={enable=true}}
->>>>>>> acd5f39 (Update)
 
 local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
 parser_config.typescript.filetype_to_parsername = {
@@ -117,22 +85,6 @@ local on_attach = function(client, bufnr)
     vim.keymap.set("n", "<leader>oi", ":TypescriptOrganizeImports<CR>") -- organize imports 
     vim.keymap.set("n", "<leader>ru", ":TypescriptRemoveUnused<CR>") -- remove unused variables
   end
-
-
-  vim.api.nvim_create_autocmd("CursordHold", {
-    buffer = bufnr,
-  callback = function()
-    local opts = {
-      focusable = false,
-      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-      border = 'rounded',
-      source = 'always',
-      prefix = ' ',
-      scope = 'cursor',
-    }
-    vim.diagnostic.open_float(nil, opts)
-  end
-  })
   
 end
 
@@ -145,17 +97,6 @@ lspconfig["volar"].setup {
 lspconfig["tsserver"].setup {
 	capabilities = cmpCap,
   	on_attach = on_attach
-}
-lspconfig["clangd"].setup {
-  capabilities = cmpCap,
-  on_attach = on_attach
-}
-
-local luasnip = require("luasnip")
-local cmp = require("cmp")
-lspconfig["tailwindcss"].setup {
-  capabilities = cmpCap,
-  on_attach = on_attach,
 }
 
 cmp.setup {
@@ -175,15 +116,8 @@ cmp.setup {
     { name = "nvim_lsp" },
     { name = "buffer" },
     { name = "path" },
-    { name = "treesitter" },
-  }),
-  snippet = {
-    expand = function(args) require('luasnip').lsp_expand(args.body) end
-  },
-=======
     { name = "vsnip" }
   })
->>>>>>> acd5f39 (Update)
 }
 
 require("olmanue.plugins.telescope-setup")
