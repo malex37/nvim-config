@@ -1,4 +1,2 @@
-require("olmanue.plugins.plugins-setup")
-require("olmanue.core.options")
-require("olmanue.core.keymaps")
-require("olmanue.core.colorscheme")
+-- bootstrap lazy.nvim, LazyVim and your plugins
+require("config.lazy")
