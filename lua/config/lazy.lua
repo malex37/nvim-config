@@ -92,6 +92,7 @@ require("lazy").setup({
         colorscheme = "catppuccin",
       },
     },
+    { import = "lazyvim.plugins.extras.lang.java" },
     -- import any extras modules here
     -- { import = "lazyvim.plugins.extras.lang.typescript" },
     -- { import = "lazyvim.plugins.extras.lang.json" },

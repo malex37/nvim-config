@@ -5,3 +5,4 @@ local opt = vim.opt
 opt.relativenumber = false
 opt.number = true
 opt.rtp = opt.rtp + "/home/linuxbrew/.linuxbrew/opt/fzf"
+vim.lsp.set_log_level("debug")

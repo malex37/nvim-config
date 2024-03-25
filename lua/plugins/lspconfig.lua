@@ -15,8 +15,10 @@ return {
     setup = {
       tsserver = function(_, opts)
         vim.g.autoformat = false
+        local cmpCap = require("cmp_nvim_lsp")
         require("lspconfig")["tsserver"].setup({
           server = opts,
+          capabilites = cmpCap
         })
         return true
       end,
