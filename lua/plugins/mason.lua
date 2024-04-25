@@ -14,6 +14,9 @@ return {
       "vue-language-server",
       "lua-language-server",
       "jdtls",
+      "clangd",
+      "codelldb",
+      "smithy-language-server",
     },
   },
   ---@param opts MasonSettings | {ensure_installed: string[]}
