@@ -5,30 +5,62 @@ return {
   filetypes = { "java" },
   opts = function()
     return {
+      -- How to find the root dir for a given filename.
+      -- packageInfo and Config are specific to Brazil: https://aws.amazon.com/builders-library/going-faster-with-continuous-delivery/
+      root_dir = function()
+        local rDir = require("jdtls.setup").find_root({ "packageInfo" }, "Config")
+        notify("Root dir set to" .. rDir)
+        return rDir
+      end,
+      userHome = os.getenv("HOME"), -- Way to get env variables
+      -- How to find the project name for a given root dir.
+      project_name = function(root_dir)
+        notify("Setting project name to " .. root_dir)
+        return root_dir and vim.fs.basename(root_dir)
+      end,
+
+      -- Where are the config and workspace dirs for a project?
+      jdtls_config_dir = function(project_name)
+        return vim.fn.stdpath("cache") .. "/jdtls/" .. project_name .. "/config"
+      end,
+      jdtls_workspace_dir = function(project_name)
+        return vim.fn.stdpath("cache") .. "/jdtls/" .. project_name .. "/workspace"
+      end,
+
       -- How to run jdtls. This can be overridden to a full java command-line
       -- if the Python wrapper script doesn't suffice.
       cmd = { vim.fn.exepath("jdtls") },
       full_cmd = function(opts)
-        local root_dir = require("jdtls.setup").find_root({ "packageInfo" }, "Config")
-        local home = os.getenv("HOME")
-        local eclipse_workspace = home .. "/.local/share/eclipse" .. vim.fn.fnamemodify(root_dir, ":p:h:t")
-        local ws_folders_jtls = {}
+        local fname = vim.api.nvim_buf_get_name(0)
+        local root_dir = opts.root_dir(fname)
+        local project_name = opts.project_name(root_dir)
+        local cmd = vim.deepcopy(opts.cmd)
+        -- Before executing find bemol (amazon specific) generated files/classpath stuff
+        local workspaceJdtlsFolders = {}
         if root_dir then
           local file = io.open(root_dir .. "/.bemol/ws_root_folders")
           if file then
             for line in file:lines() do
-              table.insert(ws_folders_jtls, "file://" .. line)
+              table.insert(workspaceJdtlsFolders, "file://" .. line)
             end
             file:close()
           end
         end
-
-        return {
-          vim.fn.exepath("jdtls"),
-          "--jvm-arg=-javaagent:" .. home .. "/usr/local/ib/lombok.jar",
-          "-data",
-          eclipse_workspace,
-        }
+        if project_name then
+          local home = os.getenv("HOME")
+          local eclipse_ws = home .. "./local/share/eclipse/" .. vim.fn.fnamemodify(root_dir, ":p:h:t")
+          -- print("Using project name conditional")
+          vim.list_extend(cmd, {
+            "-configuration",
+            opts.jdtls_config_dir(project_name),
+            "-data",
+            opts.jdtls_workspace_dir(project_name),
+            "--jvm-args-javaagent:" .. home .. "/Developer/lombok.jar",
+            "-data",
+            eclipse_ws,
+          })
+        end
+        return cmd
       end,
 
       -- These depend on nvim-dap, but can additionally be disabled by setting false here.
@@ -78,33 +110,23 @@ return {
         end
         return config
       end
-      -- Configuration can be augmented and overridden by opts.jdtls
+      local workspaceJdtlsFolders = {}
       local root_dir = require("jdtls.setup").find_root({ "packageInfo" }, "Config")
-      local home = os.getenv("HOME")
-      local eclipse_workspace = home .. "/.local/share/eclipse" .. vim.fn.fnamemodify(root_dir, ":p:h:t")
-      local ws_folders_jtls = {}
       if root_dir then
         local file = io.open(root_dir .. "/.bemol/ws_root_folders")
         if file then
           for line in file:lines() do
-            table.insert(ws_folders_jtls, "file://" .. line)
+            table.insert(workspaceJdtlsFolders, "file://" .. line)
           end
           file:close()
         end
       end
-
-      local cmd = {
-        vim.fn.exepath("jdtls"),
-        "--jvm-arg=-javaagent:" .. "/usr/local/lib/lombok.jar",
-        "-data",
-        eclipse_workspace,
-      }
+      -- Configuration can be augmented and overridden by opts.jdtls
       local config = extend_or_override({
-        cmd = cmd,
-        root_dir = root_dir,
+        cmd = opts.full_cmd(opts),
         init_options = {
           bundles = bundles,
-          workspaceFolders = ws_folders_jtls,
+          workspaceFolders = workspaceJdtlsFolders,
         },
         -- enable CMP capabilities
         capabilities = LazyVim.has("cmp-nvim-lsp") and require("cmp_nvim_lsp").default_capabilities() or nil,
@@ -119,7 +141,7 @@ return {
     -- depending on filetype, so this autocmd doesn't run for the first file.
     -- For that, we call directly below.
     vim.api.nvim_create_autocmd("FileType", {
-      pattern = "java",
+      pattern = java_filetypes,
       callback = attach_jdtls,
     })
 

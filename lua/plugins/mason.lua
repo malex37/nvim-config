@@ -17,6 +17,7 @@ return {
       "clangd",
       "codelldb",
       "smithy-language-server",
+      "deno",
     },
   },
   ---@param opts MasonSettings | {ensure_installed: string[]}

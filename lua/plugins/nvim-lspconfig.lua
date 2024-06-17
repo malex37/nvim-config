@@ -10,7 +10,7 @@ return {
   servers = {
     jdtls = {},
     -- tsserver = {},
-    tailwindcss = {},
+    --tailwindcss = {},
     -- stylua = {},
     lua_ls = {},
     clangd = {
@@ -79,6 +79,21 @@ return {
       --   })
       -- end,
       jdtls = function()
+        -- local bemol_dir = vim.fs.find({".bemol"}, { upward = true, type = "directory"})[1]
+        -- local wsFolders = {}
+        -- if bemol_dir then
+        --   local file = io.open(bemol_dir .. "/ws_root_folders", "r")
+        --   if file then
+        --     for line in file:lines() do
+        --       table.insert(wsFolders, line)
+        --     end
+        --     file:close()
+        --   end
+        -- end
+        --
+        -- for _, line in ipairs(wsFolders) do
+        --     vim.lsp.buf.add_workspace_folder(line)
+        -- end
         return true
       end,
       clangd = function(_, opts)
@@ -93,6 +108,13 @@ return {
           capabilities = cmpCap,
         })
       end,
+      pylsp = function(_, opts)
+        local cmpCap = require("cmp_nvim_lsp")
+        require("lspconfig")["pylsp"].setup({
+          capabilities = cmpCap,
+          server = opts
+        })
+      end
     },
   },
 }

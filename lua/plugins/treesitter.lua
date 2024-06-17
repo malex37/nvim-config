@@ -2,7 +2,7 @@ return {
   "nvim-treesitter/nvim-treesitter",
   opts = function(_, opts)
     if type(opts.ensure_installed) == "table" then
-      vim.list_extend(opts.ensure_installed, { "c", "cpp", "smithy" })
+      vim.list_extend(opts.ensure_installed, { "c", "cpp", "smithy", "typescript", "tsx", "python" })
     end
   end,
 }
